@@ -1,20 +1,18 @@
-import glob
+SYSTEM_PROMPT = "Ты — эксперт по геоинформационным системам (ГИС)."
+
+ANSWER_TEMPLATE = """Ответь на вопрос пользователя, используя ПРИЛОЖЕННЫЙ АЛГОРИТМ и свои знания.
+
+Вопрос пользователя: «{user_query}»
+
+Алгоритм:
+{algorithm_text}
+
+Ответ должен быть:
+- на русском языке,
+- пошаговым и практичным,
+- с указанием, как выполнить задачу в ArcMap 10.4–10.8 или QGIS,
+- без лишней теории, только конкретные действия."""
 
 
-def build_prompt():
-    headers = []
-    for path in sorted(glob.glob("algorithms/*.md")):
-        with open(path, encoding="utf-8") as f:
-            first_line = f.readline().strip()
-        if first_line.startswith("# "):
-            headers.append(first_line[2:])
-
-    return (
-        "Вот список алгоритмов геообработки пространственных данных:\n"
-        + "\n".join(f"- {h}" for h in headers)
-        + "\n\nКратко опиши назначение каждого алгоритма (1–2 предложения)."
-    )
-
-
-if __name__ == "__main__":
-    print(build_prompt())
+def build_answer_prompt(user_query, algorithm_text):
+    return ANSWER_TEMPLATE.format(user_query=user_query, algorithm_text=algorithm_text)

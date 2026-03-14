@@ -1,11 +1,41 @@
 from dotenv import load_dotenv
+from search_algorithm import search
+from classifier import classify_with_gpt
+from prompt import build_answer_prompt
 from yandex_gpt import ask
-from prompt import build_prompt
 
 load_dotenv()
 
-prompt = build_prompt()
+THRESHOLD = 0.45
 
-print("Отправляю запрос в YandexGPT...\n")
-answer = ask(prompt)
-print(answer)
+
+def handle(user_query):
+    results = search(user_query, top_n=1)
+    best_path, best_score = results[0]
+    print(f"[1/4] Поиск: лучший результат — {best_path} (score={best_score:.3f})")
+
+    if best_score >= THRESHOLD:
+        algo_path = best_path
+        print(f"[2/4] Score >= {THRESHOLD} → используем найденный алгоритм")
+    else:
+        print(f"[2/4] Score < {THRESHOLD} → отправляем в GPT-классификатор")
+        algo_path = classify_with_gpt(user_query)
+        if not algo_path:
+            print("[3/4] GPT-классификатор: подходящий алгоритм НЕ найден")
+            return "К сожалению, подходящий алгоритм не найден. Уточните запрос."
+        print(f"[3/4] GPT-классификатор определил: {algo_path}")
+
+    print(f"[3/4] Читаю алгоритм: {algo_path}")
+    with open(algo_path, encoding="utf-8") as f:
+        algorithm_text = f.read()
+
+    print("[4/4] Отправляю итоговый промт в YandexGPT...")
+    prompt = build_answer_prompt(user_query, algorithm_text)
+    return ask(prompt)
+
+
+if __name__ == "__main__":
+    query = input("Введите вопрос: ")
+    print("\nИщу алгоритм...\n")
+    answer = handle(query)
+    print(answer)

@@ -1,0 +1,27 @@
+# =================================================================
+# Systemd-сервис для GeoMind Assistant
+# Копировать в: /etc/systemd/system/geomind.service
+# Затем: systemctl daemon-reload && systemctl enable geomind
+# =================================================================
+
+[Unit]
+Description=GeoMind Assistant — ИИ-ассистент для ГИС
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/geomind-assistant
+EnvironmentFile=/opt/geomind-assistant/.env
+ExecStart=/opt/geomind-assistant/venv/bin/uvicorn app:app --host 127.0.0.1 --port 8000 --workers 2
+Restart=always
+RestartSec=5
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=geomind
+
+[Install]
+WantedBy=multi-user.target

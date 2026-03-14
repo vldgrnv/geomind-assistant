@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoMind — Тарифы</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="plans-container">
+    <h1>Тарифные планы</h1>
+    <p class="subtitle">Выберите подходящий план для ваших задач</p>
+
+    <div class="plans-grid">
+        <!-- Free -->
+        <div class="plan-card">
+            <h3>Free</h3>
+            <div class="price">0 ₽<span> / мес</span></div>
+            <div class="period">Бесплатно навсегда</div>
+            <ul class="plan-features">
+                <li>10 запросов в месяц</li>
+                <li>Доступ ко всем алгоритмам</li>
+                <li>История чатов</li>
+            </ul>
+            <button class="btn btn-outline btn-full" onclick="selectPlan('free')">Выбрать</button>
+        </div>
+
+        <!-- Basic -->
+        <div class="plan-card featured">
+            <h3>Basic</h3>
+            <div class="price">490 ₽<span> / мес</span></div>
+            <div class="period">Для активных специалистов</div>
+            <ul class="plan-features">
+                <li>100 запросов в месяц</li>
+                <li>Доступ ко всем алгоритмам</li>
+                <li>История чатов</li>
+                <li>Приоритетная обработка</li>
+            </ul>
+            <button class="btn btn-primary btn-full" onclick="selectPlan('basic')">Выбрать план</button>
+        </div>
+
+        <!-- Pro -->
+        <div class="plan-card">
+            <h3>Pro</h3>
+            <div class="price">1 490 ₽<span> / мес</span></div>
+            <div class="period">Для команд и организаций</div>
+            <ul class="plan-features">
+                <li>Безлимитные запросы</li>
+                <li>Доступ ко всем алгоритмам</li>
+                <li>История чатов</li>
+                <li>Приоритетная обработка</li>
+                <li>Поддержка по email</li>
+            </ul>
+            <button class="btn btn-outline btn-full" onclick="selectPlan('pro')">Выбрать план</button>
+        </div>
+    </div>
+
+    <div class="plans-back">
+        <a href="/static/dashboard.html">← Вернуться в личный кабинет</a>
+    </div>
+</div>
+
+<script>
+async function selectPlan(plan) {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/static/login.html?plan=' + plan;
+        return;
+    }
+    var res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ plan: plan }),
+    });
+    if (res.ok) {
+        alert('План «' + plan.charAt(0).toUpperCase() + plan.slice(1) + '» активирован!');
+        window.location.href = '/static/dashboard.html';
+    } else {
+        alert('Ошибка при смене плана');
+    }
+}
+</script>
+</body>
+</html>

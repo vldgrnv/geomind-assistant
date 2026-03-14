@@ -1,13 +1,16 @@
 import glob
+import os
 import re
 
-from yandex_gpt import ask
+from .yandex_gpt import ask
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _collect_metadata():
     """Собирает название, ключевые слова и примеры промтов из каждого .md файла."""
     blocks = []
-    for path in sorted(glob.glob("algorithms/*.md")):
+    for path in sorted(glob.glob(os.path.join(BASE_DIR, "algorithms/*.md"))):
         with open(path, encoding="utf-8") as f:
             text = f.read()
 

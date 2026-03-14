@@ -1,3 +1,8 @@
 requests
 python-dotenv
 scikit-learn
+rank-bm25
+pymorphy3
+fastapi
+uvicorn
+PyJWT

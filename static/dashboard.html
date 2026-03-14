@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoMind — Личный кабинет</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
+</head>
+<body>
+<div class="dashboard">
+    <!-- Left Sidebar: Chats -->
+    <aside class="sidebar-left">
+        <h2>💬 Чаты</h2>
+        <button class="btn btn-primary btn-full" id="new-chat-btn" style="margin-bottom:12px">+ Новый чат</button>
+        <div class="chat-list" id="chat-list"></div>
+    </aside>
+
+    <!-- Chat Area -->
+    <main class="chat-area">
+        <div class="chat-header">
+            <div class="logo-icon">🌍</div>
+            <span>GeoMind Assistant</span>
+        </div>
+        <div class="messages" id="messages">
+            <div class="empty-state" id="empty-state">
+                <div class="icon">🗺️</div>
+                <div>Задайте вопрос по ГИС-алгоритмам</div>
+                <div style="font-size:13px">Например: «Как построить буферную зону вокруг дороги?»</div>
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input class="input" id="query-input" placeholder="Введите вопрос..." autocomplete="off">
+            <button class="btn btn-primary" id="send-btn">Отправить</button>
+        </div>
+    </main>
+
+    <!-- Right Sidebar: Profile & Stats -->
+    <aside class="sidebar-right">
+        <div class="profile-section">
+            <h3>Профиль</h3>
+            <div class="profile-email" id="user-email">—</div>
+        </div>
+
+        <div class="profile-section">
+            <h3>Текущий план</h3>
+            <span class="plan-badge free" id="plan-badge">Free</span>
+        </div>
+
+        <div class="profile-section">
+            <h3>Статистика запросов</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="label">Сегодня</span>
+                    <span class="value" id="stat-today">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Неделя</span>
+                    <span class="value" id="stat-week">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Месяц</span>
+                    <span class="value" id="stat-month">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Остаток</span>
+                    <span class="value" id="stat-remaining">—</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="/static/plans.html" class="btn btn-outline btn-full">Сменить тариф</a>
+            <button class="btn btn-ghost btn-full" id="logout-btn">Выйти</button>
+        </div>
+    </aside>
+</div>
+<script src="/static/js/chat.js?v=5"></script>
+</body>
+</html>

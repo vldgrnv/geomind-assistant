@@ -1,10 +1,19 @@
+import os
 from dotenv import load_dotenv
-from search_algorithm import search
-from classifier import classify_with_gpt
-from prompt import build_answer_prompt
-from yandex_gpt import ask
 
-load_dotenv()
+try:
+    from .search_algorithm import search
+    from .classifier import classify_with_gpt
+    from .prompt import build_answer_prompt
+    from .yandex_gpt import ask
+except ImportError:
+    from search_algorithm import search
+    from classifier import classify_with_gpt
+    from prompt import build_answer_prompt
+    from yandex_gpt import ask
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 THRESHOLD = 0.45
 

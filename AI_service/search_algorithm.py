@@ -1,4 +1,5 @@
 import glob
+import os
 import re
 
 import pymorphy3
@@ -7,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 morph = pymorphy3.MorphAnalyzer()
 
 # ---------- Словарь синонимов (ГИС-домен) ----------
@@ -172,7 +174,7 @@ def load_algorithms(apply_lemma=True):
     """Загружает все md-файлы. Возвращает (тексты, пути).
     Если apply_lemma=True — лемматизирует тексты."""
     docs, paths = [], []
-    for path in sorted(glob.glob("algorithms/*.md")):
+    for path in sorted(glob.glob(os.path.join(BASE_DIR, "algorithms/*.md"))):
         with open(path, encoding="utf-8") as f:
             text = f.read()
         doc = _extract_sections(text)

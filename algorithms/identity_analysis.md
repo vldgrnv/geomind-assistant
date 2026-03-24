@@ -110,13 +110,3 @@ C = A \cup (A \cap B)
 4. **Производительность**: время выполнения растёт экспоненциально с увеличением числа объектов.
 5. **Ограничения QGIS**: отсутствие прямого инструмента усложняет процесс для пользователей без опыта.
 
-## 9. Научно-методическое обоснование
-
-Тождественное наложение является ключевым элементом **подготовки данных для пространственного моделирования**, обеспечивая полноту исходной выборки и обогащение контекстом. В учебниках по ГИС (например, de Smith et al., *Geospatial Analysis*, 2018) identity рассматривается как базовая операция для интеграции разнородных данных в единый аналитический набор.
-
-## 10. Литература и нормативные источники
-
-- de Smith M. J., Goodchild M. F., Longley P. A. *Geospatial Analysis: A Comprehensive Guide*. — 6th ed. — Locate Press, 2018.
-- ISO 19107:2003. *Geographic information — Spatial schema*.
-- QGIS Documentation. *Intersection, Difference, Merge Vector Layers*. URL: https://docs.qgis.org
-- Esri. *Identity (Analysis)*. ArcGIS Desktop Help (версии 10.4–10.8). URL: https://desktop.arcgis.com

@@ -110,14 +110,3 @@ IDW относится к классу **детерминированных ин
 4. **Артефакты «пики и ямы»**: при высоком значении Power поверхность имеет резкие локальные экстремумы над точками.
 5. **Требует проекции в метрах**: использование WGS84 приведёт к искажённым расстояниям и некорректной поверхности.
 
-## 9. Научно-методическое обоснование
-
-Метод IDW был впервые предложен в 1960-х годах и с тех пор стал стандартом де-факто в прикладной геоинформатике благодаря своей прозрачности и минимальным требованиям к входным данным. В учебниках (например, Lloyd C., *Spatial Data Analysis*, 2010) IDW рассматривается как базовый метод поверхностного моделирования, подходящий для начального анализа и визуализации.
-
-## 10. Литература и нормативные источники
-
-- Lloyd C. D. *Spatial Data Analysis: An Introduction for GIS Users*. — Oxford University Press, 2010.
-- Burrough P. A., McDonnell R. A. *Principles of Geographical Information Systems*. — Oxford University Press, 1998.
-- ISO 19123:2005. *Geographic information — Schema for coverage geometry and functions*.
-- QGIS Documentation. *IDW Interpolation*. URL: https://docs.qgis.org
-- Esri. *IDW (Spatial Analyst)*. ArcGIS Desktop Help (версии 10.4–10.8). URL: https://desktop.arcgis.com

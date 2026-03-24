@@ -110,14 +110,3 @@
 3. **Точность геометрии**: ошибки топологии (самопересечения, щели) могут привести к пропуску совпадений.
 4. **Отсутствие семантики**: система не понимает, *почему* объекты связаны — только *как*.
 5. **Ограничения ArcMap**: в версиях до 10.7 отсутствует предикат *HAVE_THEIR_CENTER_IN*, который есть в QGIS.
-
-## 9. Научно-методическое обоснование
-
-Пространственное соединение реализует концепцию **пространственной зависимости** и является практическим инструментом для проверки гипотез о территориальной принадлежности. В учебниках по ГИС (например, de Smith et al., *Geospatial Analysis*, 2018) spatial join рассматривается как базовая операция overlay-анализа и обязательный этап подготовки данных для картографического моделирования.
-
-## 10. Литература и нормативные источники
-
-- de Smith M. J., Goodchild M. F., Longley P. A. *Geospatial Analysis: A Comprehensive Guide*. — 6th ed. — Locate Press, 2018.
-- ISO 19107:2003. *Geographic information — Spatial schema*.
-- QGIS Documentation. *Join attributes by location*. URL: https://docs.qgis.org
-- Esri. *Spatial Join (Analysis)*. ArcGIS Desktop Help (версии 10.4–10.8). URL: https://desktop.arcgis.com

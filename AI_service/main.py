@@ -48,3 +48,7 @@ if __name__ == "__main__":
     print("\nИщу алгоритм...\n")
     answer = handle(query)
     print(answer)
+
+
+# Запуск сайта http://127.0.0.1:8000/
+# python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload

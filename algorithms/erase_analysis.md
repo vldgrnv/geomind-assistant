@@ -90,12 +90,3 @@
 4. **Альтернатива в QGIS**: называется «Разность» (Difference), но функционально идентична erase.
 5. **Не сохраняет атрибуты отсекающего слоя** — только целевого.
 
-## 9. Научно-методическое обоснование
-
-Вычитание реализует принцип **пространственного исключения**, который является логическим продолжением теории множеств в ГИС. В учебниках (Longley et al., *Geographic Information Science & Systems*, 2015) erase рассматривается как базовая операция для подготовки данных к тематическому анализу.
-
-## 10. Литература и нормативные источники
-
-- Longley P. A., Goodchild M. F., Maguire D. J., Rhind D. W. *Geographic Information Science & Systems*. — 4th ed. — Wiley, 2015.
-- QGIS Documentation. *Difference*. URL: https://docs.qgis.org
-- Esri. *Erase (Analysis)*. ArcGIS Desktop Help (версии 10.4–10.8). URL: https://desktop.arcgis.com

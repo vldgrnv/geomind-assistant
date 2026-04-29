@@ -13,7 +13,7 @@ echo "==== 1. Обновление системы ===="
 apt update && apt upgrade -y
 
 echo "==== 2. Установка зависимостей ===="
-apt install -y python3 python3-venv python3-pip nginx certbot python3-certbot-nginx git
+apt install -y python3 python3-venv python3-pip nginx certbot python3-certbot-nginx git gdal-bin
 
 echo "==== 3. Создание директории ===="
 mkdir -p $APP_DIR

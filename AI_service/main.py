@@ -1,4 +1,5 @@
 import os
+import re
 from dotenv import load_dotenv
 
 try:
@@ -17,8 +18,19 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 THRESHOLD = 0.45
 
+_GREETING_PAT = re.compile(r"^[\s]*привет[\s]*[!?.…]*[\s]*$", re.IGNORECASE)
+
+_HELLO_REPLY = (
+    "Привет! Рад вас видеть. Я GeoMind Assistant — помогу разобраться с ГИС-алгоритмами "
+    "и геодезическими задачами. Напишите, что нужно посчитать или уточнить, "
+    "можно простыми словами — подберу подходящий способ решения.")
+
 
 def handle(user_query):
+    if _GREETING_PAT.match(user_query or ""):
+        print("[0/4] Приветствие — короткий ответ без поиска")
+        return _HELLO_REPLY
+
     results = search(user_query, top_n=1)
     best_path, best_score = results[0]
     print(f"[1/4] Поиск: лучший результат — {best_path} (score={best_score:.3f})")

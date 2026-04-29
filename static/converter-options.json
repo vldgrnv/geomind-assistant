@@ -1,0 +1,112 @@
+{
+  "inputs": [
+    {
+      "key": "shp",
+      "label": "Shapefile (.zip)",
+      "hint": "ZIP с .shp, .shx, .dbf"
+    },
+    {
+      "key": "geojson",
+      "label": "GeoJSON",
+      "hint": ".geojson или .json"
+    },
+    {
+      "key": "kml_kmz",
+      "label": "KML / KMZ",
+      "hint": ".kml или .kmz"
+    },
+    {
+      "key": "gpkg",
+      "label": "GeoPackage (.gpkg)",
+      "hint": ""
+    },
+    {
+      "key": "gdb",
+      "label": "File Geodatabase",
+      "hint": "ZIP с папкой .gdb"
+    },
+    {
+      "key": "dxf",
+      "label": "DXF (AutoCAD)",
+      "hint": ".dxf"
+    },
+    {
+      "key": "csv",
+      "label": "CSV с координатами",
+      "hint": "Колонки lat/lon, x/y и т.п."
+    },
+    {
+      "key": "xlsx",
+      "label": "Excel (.xlsx)",
+      "hint": "Первая страница, координаты в колонках"
+    },
+    {
+      "key": "geotiff",
+      "label": "GeoTIFF",
+      "hint": ".tif / .tiff"
+    },
+    {
+      "key": "image_world",
+      "label": "JPEG/PNG + world file",
+      "hint": "ZIP: изображение + .jgw/.pgw/.tfw"
+    },
+    {
+      "key": "erdas_img",
+      "label": "ERDAS Imagine (.img)",
+      "hint": ".img или ZIP с .img"
+    }
+  ],
+  "outputs_by_input": {
+    "shp": [
+      "geojson",
+      "gpkg"
+    ],
+    "geojson": [
+      "shp"
+    ],
+    "kml_kmz": [
+      "geojson",
+      "shp"
+    ],
+    "gpkg": [
+      "shp",
+      "geojson"
+    ],
+    "gdb": [
+      "gpkg",
+      "shp"
+    ],
+    "dxf": [
+      "geojson"
+    ],
+    "csv": [
+      "geojson"
+    ],
+    "xlsx": [
+      "shp"
+    ],
+    "geotiff": [
+      "cog"
+    ],
+    "image_world": [
+      "geotiff"
+    ],
+    "erdas_img": [
+      "geotiff"
+    ]
+  },
+  "output_labels": {
+    "geojson": "GeoJSON",
+    "shp": "Shapefile (.zip)",
+    "gpkg": "GeoPackage (.gpkg)",
+    "cog": "Cloud Optimized GeoTIFF (COG)",
+    "geotiff": "GeoTIFF"
+  },
+  "output_hints": {
+    "geojson": "Для веб-карт и API",
+    "shp": "Для ArcMap / совместимость",
+    "gpkg": "Open-source ГИС",
+    "cog": "Веб и облако",
+    "geotiff": "Унифицированный растр"
+  }
+}

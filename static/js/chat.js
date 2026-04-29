@@ -9,6 +9,43 @@ const headers = {
 
 let currentChatId = null;
 
+if (typeof marked !== 'undefined' && marked.use) {
+    marked.use({ gfm: true, breaks: true });
+}
+
+/** Разрывает «стену текста», когда модель не поставила переносы перед заголовками и шагами. */
+function normalizeAssistantMarkdown(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    let t = raw.replace(/\r\n/g, '\n').trim();
+    t = t.replace(/([^\n#])(#{1,6}\s)/g, '$1\n\n$2');
+    t = t.replace(/([.!?;»])\s*(\d{1,2}\.\s)/g, '$1\n\n$2');
+    t = t.replace(/([а-яёА-ЯЁa-zA-Z)\]”—])\s*(\d{1,2}\.\s+)/g, '$1\n\n$2');
+    return t;
+}
+
+function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function renderAssistantHtml(text) {
+    const normalized = normalizeAssistantMarkdown(text);
+    let html;
+    if (typeof marked !== 'undefined' && marked.parse) {
+        html = marked.parse(normalized);
+    } else {
+        html = '<p>' + escapeHtml(normalized).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    }
+    if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) {
+        return DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
+            ALLOWED_ATTR: ['href', 'title', 'colspan', 'rowspan'],
+        });
+    }
+    return escapeHtml(normalized).replace(/\n/g, '<br>');
+}
+
 // ---------- DOM Elements ----------
 const chatList = document.getElementById('chat-list');
 const messagesDiv = document.getElementById('messages');
@@ -185,7 +222,14 @@ function addMessageBubble(role, text) {
     }
     const div = document.createElement('div');
     div.className = 'message ' + role;
-    div.textContent = text;
+    if (role === 'assistant') {
+        const inner = document.createElement('div');
+        inner.className = 'message-content';
+        inner.innerHTML = renderAssistantHtml(text);
+        div.appendChild(inner);
+    } else {
+        div.textContent = text;
+    }
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }

@@ -10,6 +10,7 @@ load_dotenv()
 from database.db import init_db
 from auth.router import router as auth_router
 from api.router import router as api_router
+from conversion.router import router as convert_router
 
 init_db()
 
@@ -24,6 +25,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(api_router)
+app.include_router(convert_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 

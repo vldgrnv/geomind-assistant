@@ -6,3 +6,6 @@ pymorphy3
 fastapi
 uvicorn
 PyJWT
+python-multipart
+openpyxl
+# Системные утилиты GDAL (не ставятся через pip): sudo apt install gdal-bin

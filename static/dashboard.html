@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Если открываете ЛК не с порта приложения: <meta name="geomind-api-base" content="http://127.0.0.1:8000"> -->
     <title>GeoMind — Личный кабинет</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=7">
+    <link rel="stylesheet" href="/static/css/style.css?v=9">
 </head>
 <body>
 <div class="dashboard">
@@ -78,6 +78,10 @@
             <select id="conv-output-select" class="converter-select"></select>
             <p class="converter-hint" id="conv-hint"></p>
             <button type="button" class="btn btn-primary btn-full" id="conv-open-btn">Конвертировать</button>
+            <div class="export-actions">
+                <button type="button" class="btn btn-outline btn-full" id="export-docx-btn" disabled>Последний ответ в DOCX</button>
+                <button type="button" class="btn btn-outline btn-full" id="export-pdf-btn" disabled>Последний ответ в PDF</button>
+            </div>
         </div>
 
         <div class="sidebar-bottom">
@@ -103,7 +107,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" crossorigin="anonymous"></script>
-<script src="/static/js/chat.js?v=7"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.min.js" crossorigin="anonymous"></script>
+<script src="/static/js/chat.js?v=8"></script>
 <script src="/static/js/converter.js?v=5"></script>
 </body>
 </html>

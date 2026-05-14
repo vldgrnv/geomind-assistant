@@ -37,13 +37,18 @@ async def convert_upload(
         raise HTTPException(400, "Не указано имя файла")
 
     suf = Path(file.filename).suffix.lower()
-    raw = await file.read()
-    if len(raw) > MAX_UPLOAD_BYTES:
-        raise HTTPException(413, "Файл слишком большой")
-
     tmp_in = Path(tempfile.mkstemp(prefix="gm_up_", suffix=suf)[1])
     try:
-        tmp_in.write_bytes(raw)
+        size = 0
+        with tmp_in.open("wb") as dst:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > MAX_UPLOAD_BYTES:
+                    raise HTTPException(413, "Файл слишком большой")
+                dst.write(chunk)
         try:
             out_path, mime, dl_name, work_root = convert_file(
                 input_format.strip(),

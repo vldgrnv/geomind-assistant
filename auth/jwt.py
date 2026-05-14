@@ -3,7 +3,10 @@ import jwt
 import datetime
 from fastapi import Header, HTTPException
 
-SECRET = os.environ.get("JWT_SECRET", "geomind-secret-key-change-in-prod")
+SECRET = os.environ.get("JWT_SECRET")
+if not SECRET:
+    raise RuntimeError("JWT_SECRET must be set in the environment")
+
 EXPIRE_DAYS = int(os.environ.get("JWT_EXPIRE_DAYS", 30))
 ALGORITHM = "HS256"
 
@@ -25,5 +28,5 @@ def get_current_user_id(authorization: str = Header(...)):
         return payload["user_id"]
     except jwt.ExpiredSignatureError:
         raise HTTPException(401, "Токен истёк")
-    except jwt.DecodeError:
+    except jwt.InvalidTokenError:
         raise HTTPException(401, "Невалидный токен")

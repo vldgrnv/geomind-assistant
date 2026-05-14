@@ -5,8 +5,8 @@ from typing import Optional
 from auth.jwt import get_current_user_id
 from database.models import (
     get_stats, create_chat, get_chats,
-    add_message, get_messages, count_requests, get_user_by_id,
-    update_plan, PLAN_LIMITS, delete_chat, rename_chat,
+    add_message, count_requests, get_user_by_id, get_chat_for_user,
+    update_plan, PLAN_LIMITS, delete_chat, rename_chat, get_messages_for_user,
 )
 from AI_service.main import handle
 
@@ -30,14 +30,31 @@ class PlanRequest(BaseModel):
 @router.post("/ask", response_model=AskResponse)
 def ask_endpoint(req: AskRequest, user_id: int = Depends(get_current_user_id)):
     user = get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(401, "Пользователь не найден")
     month_count = count_requests(user_id, 30)
     if month_count >= user["requests_limit"]:
         raise HTTPException(403, "Лимит запросов исчерпан. Обновите тариф.")
 
-    chat_id = req.chat_id or create_chat(user_id)
+    if req.chat_id is not None:
+        chat = get_chat_for_user(req.chat_id, user_id)
+        if not chat:
+            raise HTTPException(404, "Чат не найден")
+        chat_id = req.chat_id
+    else:
+        chat_id = create_chat(user_id)
     add_message(chat_id, "user", req.query)
 
-    answer = handle(req.query)
+    try:
+        answer = handle(req.query)
+    except RuntimeError:
+        answer = (
+            "Сервис генерации ответа временно недоступен. "
+            "Попробуйте повторить запрос чуть позже."
+        )
+    except Exception as exc:
+        raise HTTPException(500, "Внутренняя ошибка обработки запроса") from exc
+
     add_message(chat_id, "assistant", answer)
 
     return AskResponse(answer=answer, chat_id=chat_id)
@@ -58,7 +75,10 @@ def chats_endpoint(user_id: int = Depends(get_current_user_id)):
 
 @router.get("/chats/{chat_id}/messages")
 def messages_endpoint(chat_id: int, user_id: int = Depends(get_current_user_id)):
-    return get_messages(chat_id)
+    messages = get_messages_for_user(chat_id, user_id)
+    if messages is None:
+        raise HTTPException(404, "Чат не найден")
+    return messages
 
 
 @router.delete("/chats/{chat_id}")
@@ -83,4 +103,7 @@ def rename_chat_endpoint(chat_id: int, req: RenameRequest, user_id: int = Depend
 
 @router.get("/stats")
 def stats_endpoint(user_id: int = Depends(get_current_user_id)):
-    return get_stats(user_id)
+    stats = get_stats(user_id)
+    if not stats:
+        raise HTTPException(404, "Пользователь не найден")
+    return stats

@@ -8,6 +8,7 @@ const headers = {
 };
 
 let currentChatId = null;
+let lastAssistantText = '';
 
 if (typeof marked !== 'undefined' && marked.use) {
     marked.use({ gfm: true, breaks: true });
@@ -54,6 +55,127 @@ const queryInput = document.getElementById('query-input');
 const sendBtn = document.getElementById('send-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
 const logoutBtn = document.getElementById('logout-btn');
+const exportDocxBtn = document.getElementById('export-docx-btn');
+const exportPdfBtn = document.getElementById('export-pdf-btn');
+
+function updateExportButtons() {
+    const disabled = !lastAssistantText.trim();
+    if (exportDocxBtn) exportDocxBtn.disabled = disabled;
+    if (exportPdfBtn) exportPdfBtn.disabled = disabled;
+}
+
+function setLastAssistantText(text) {
+    lastAssistantText = typeof text === 'string' ? text : '';
+    updateExportButtons();
+}
+
+function getLastAssistantMessage(msgs) {
+    for (let i = msgs.length - 1; i >= 0; i -= 1) {
+        if (msgs[i].role === 'assistant' && typeof msgs[i].text === 'string') {
+            return msgs[i].text;
+        }
+    }
+    return '';
+}
+
+function buildExportFileName(ext) {
+    const now = new Date();
+    const pad = (v) => String(v).padStart(2, '0');
+    const stamp = [
+        now.getFullYear(),
+        pad(now.getMonth() + 1),
+        pad(now.getDate()),
+    ].join('-') + '_' + [pad(now.getHours()), pad(now.getMinutes())].join('-');
+    return `geomind-last-answer-${stamp}.${ext}`;
+}
+
+function markdownToPlainLines(text) {
+    return normalizeAssistantMarkdown(text)
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+        .map((line) => line.replace(/\s+$/g, ''));
+}
+
+async function exportLastAnswerDocx() {
+    if (!lastAssistantText.trim() || typeof docx === 'undefined' || typeof saveAs === 'undefined') return;
+
+    const paragraphs = markdownToPlainLines(lastAssistantText).map((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            return new docx.Paragraph({ text: '' });
+        }
+
+        const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+        if (headingMatch) {
+            const levelMap = {
+                1: docx.HeadingLevel.HEADING_1,
+                2: docx.HeadingLevel.HEADING_2,
+                3: docx.HeadingLevel.HEADING_3,
+                4: docx.HeadingLevel.HEADING_4,
+                5: docx.HeadingLevel.HEADING_5,
+                6: docx.HeadingLevel.HEADING_6,
+            };
+            return new docx.Paragraph({
+                text: headingMatch[2],
+                heading: levelMap[headingMatch[1].length],
+                spacing: { after: 120 },
+            });
+        }
+
+        return new docx.Paragraph({
+            text: trimmed.replace(/^[-*]\s+/, '• ').replace(/^\d+\.\s+/, (m) => m),
+            spacing: { after: 120 },
+        });
+    });
+
+    const documentFile = new docx.Document({
+        sections: [{
+            properties: {},
+            children: paragraphs,
+        }],
+    });
+
+    const blob = await docx.Packer.toBlob(documentFile);
+    saveAs(blob, buildExportFileName('docx'));
+}
+
+function exportLastAnswerPdf() {
+    if (!lastAssistantText.trim() || typeof pdfMake === 'undefined') return;
+
+    const content = markdownToPlainLines(lastAssistantText).map((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            return { text: ' ', margin: [0, 0, 0, 8] };
+        }
+
+        const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+        if (headingMatch) {
+            const fontSizeMap = { 1: 18, 2: 16, 3: 15, 4: 14, 5: 13, 6: 12 };
+            return {
+                text: headingMatch[2],
+                bold: true,
+                fontSize: fontSizeMap[headingMatch[1].length],
+                margin: [0, 8, 0, 6],
+            };
+        }
+
+        return {
+            text: trimmed.replace(/^[-*]\s+/, '• '),
+            fontSize: 12,
+            margin: [0, 0, 0, 6],
+        };
+    });
+
+    pdfMake.createPdf({
+        pageSize: 'A4',
+        pageMargins: [40, 48, 40, 48],
+        defaultStyle: {
+            font: 'Roboto',
+            fontSize: 12,
+        },
+        content,
+    }).download(buildExportFileName('pdf'));
+}
 
 // ---------- Stats ----------
 async function loadStats() {
@@ -132,6 +254,7 @@ async function deleteChat(chatId) {
     await fetch(API + '/api/chats/' + chatId, { method: 'DELETE', headers });
     if (currentChatId === chatId) {
         currentChatId = null;
+        setLastAssistantText('');
         messagesDiv.innerHTML = `
             <div class="empty-state">
                 <div class="icon">🗺️</div>
@@ -211,9 +334,11 @@ function renderMessages(msgs) {
     messagesDiv.innerHTML = '';
     if (!msgs.length) {
         messagesDiv.innerHTML = emptyState.outerHTML;
+        setLastAssistantText('');
         return;
     }
     msgs.forEach(m => addMessageBubble(m.role, m.text));
+    setLastAssistantText(getLastAssistantMessage(msgs));
 }
 
 function addMessageBubble(role, text) {
@@ -232,6 +357,9 @@ function addMessageBubble(role, text) {
     }
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    if (role === 'assistant') {
+        setLastAssistantText(text);
+    }
 }
 
 function showTyping() {
@@ -291,6 +419,7 @@ queryInput.addEventListener('keydown', (e) => {
 // ---------- New Chat ----------
 newChatBtn.addEventListener('click', () => {
     currentChatId = null;
+    setLastAssistantText('');
     messagesDiv.innerHTML = `
         <div class="empty-state">
             <div class="icon">🗺️</div>
@@ -299,6 +428,8 @@ newChatBtn.addEventListener('click', () => {
         </div>`;
     loadChats();
 });
+if (exportDocxBtn) exportDocxBtn.addEventListener('click', exportLastAnswerDocx);
+if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportLastAnswerPdf);
 
 // ---------- Logout ----------
 function logout() {
@@ -311,3 +442,4 @@ logoutBtn.addEventListener('click', logout);
 // ---------- Init ----------
 loadStats();
 loadChats();
+updateExportButtons();

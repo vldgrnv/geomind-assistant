@@ -16,9 +16,18 @@ init_db()
 
 app = FastAPI(title="GeoMind Assistant API")
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ALLOW_ORIGINS",
+        "http://127.0.0.1:8000,http://localhost:8000",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

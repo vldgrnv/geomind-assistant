@@ -1,14 +1,16 @@
 import os
 import re
+import time
+import logging
 from dotenv import load_dotenv
 
 try:
-    from .search_algorithm import search
+    from .search_algorithm import get_algorithm_text, search
     from .classifier import classify_with_gpt
     from .prompt import build_answer_prompt
     from .yandex_gpt import ask
 except ImportError:
-    from search_algorithm import search
+    from search_algorithm import get_algorithm_text, search
     from classifier import classify_with_gpt
     from prompt import build_answer_prompt
     from yandex_gpt import ask
@@ -17,6 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 THRESHOLD = 0.45
+logger = logging.getLogger("geomind.ai")
 
 _GREETING_PAT = re.compile(r"^[\s]*привет[\s]*[!?.…]*[\s]*$", re.IGNORECASE)
 
@@ -27,32 +30,47 @@ _HELLO_REPLY = (
 
 
 def handle(user_query):
+    started_at = time.perf_counter()
     if _GREETING_PAT.match(user_query or ""):
-        print("[0/4] Приветствие — короткий ответ без поиска")
+        logger.info("ask_path=greeting duration_ms=%.2f", (time.perf_counter() - started_at) * 1000)
         return _HELLO_REPLY
 
+    search_started_at = time.perf_counter()
     results = search(user_query, top_n=1)
     best_path, best_score = results[0]
-    print(f"[1/4] Поиск: лучший результат — {best_path} (score={best_score:.3f})")
+    search_duration_ms = (time.perf_counter() - search_started_at) * 1000
+    logger.info(
+        "search_completed best_path=%s score=%.3f duration_ms=%.2f",
+        best_path,
+        best_score,
+        search_duration_ms,
+    )
 
     if best_score >= THRESHOLD:
         algo_path = best_path
-        print(f"[2/4] Score >= {THRESHOLD} → используем найденный алгоритм")
+        logger.info("search_threshold_hit threshold=%.2f", THRESHOLD)
     else:
-        print(f"[2/4] Score < {THRESHOLD} → отправляем в GPT-классификатор")
+        logger.info("search_threshold_miss threshold=%.2f", THRESHOLD)
+        classifier_started_at = time.perf_counter()
         algo_path = classify_with_gpt(user_query)
+        classifier_duration_ms = (time.perf_counter() - classifier_started_at) * 1000
         if not algo_path:
-            print("[3/4] GPT-классификатор: подходящий алгоритм НЕ найден")
+            logger.info("classifier_no_match duration_ms=%.2f", classifier_duration_ms)
             return "К сожалению, подходящий алгоритм не найден. Уточните запрос."
-        print(f"[3/4] GPT-классификатор определил: {algo_path}")
+        logger.info("classifier_match path=%s duration_ms=%.2f", algo_path, classifier_duration_ms)
 
-    print(f"[3/4] Читаю алгоритм: {algo_path}")
-    with open(algo_path, encoding="utf-8") as f:
-        algorithm_text = f.read()
+    algorithm_text = get_algorithm_text(algo_path)
 
-    print("[4/4] Отправляю итоговый промт в YandexGPT...")
+    llm_started_at = time.perf_counter()
     prompt = build_answer_prompt(user_query, algorithm_text)
-    return ask(prompt)
+    answer = ask(prompt)
+    logger.info(
+        "ask_completed path=%s total_duration_ms=%.2f llm_duration_ms=%.2f",
+        algo_path,
+        (time.perf_counter() - started_at) * 1000,
+        (time.perf_counter() - llm_started_at) * 1000,
+    )
+    return answer
 
 
 if __name__ == "__main__":

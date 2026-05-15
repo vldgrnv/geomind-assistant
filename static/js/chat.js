@@ -9,6 +9,7 @@ const headers = {
 
 let currentChatId = null;
 let lastAssistantText = '';
+const SCRIPT_PROMISES = new Map();
 
 if (typeof marked !== 'undefined' && marked.use) {
     marked.use({ gfm: true, breaks: true });
@@ -57,6 +58,24 @@ const newChatBtn = document.getElementById('new-chat-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const exportDocxBtn = document.getElementById('export-docx-btn');
 const exportPdfBtn = document.getElementById('export-pdf-btn');
+const reportBugBtn = document.getElementById('report-bug-btn');
+const reportBugPanel = document.getElementById('report-bug-panel');
+const reportBugText = document.getElementById('report-bug-text');
+const reportBugSendBtn = document.getElementById('report-bug-send-btn');
+const reportBugStatus = document.getElementById('report-bug-status');
+
+function injectAdminLink(isAdmin) {
+    if (!isAdmin) return;
+    const sidebarBottom = document.querySelector('.sidebar-bottom');
+    if (!sidebarBottom || document.getElementById('admin-link-btn')) return;
+
+    const link = document.createElement('a');
+    link.href = '/admin';
+    link.className = 'btn btn-outline btn-full';
+    link.id = 'admin-link-btn';
+    link.textContent = 'Админ-панель';
+    sidebarBottom.prepend(link);
+}
 
 function updateExportButtons() {
     const disabled = !lastAssistantText.trim();
@@ -67,6 +86,12 @@ function updateExportButtons() {
 function setLastAssistantText(text) {
     lastAssistantText = typeof text === 'string' ? text : '';
     updateExportButtons();
+}
+
+function setBugReportStatus(text, type = '') {
+    if (!reportBugStatus) return;
+    reportBugStatus.textContent = text;
+    reportBugStatus.className = 'report-bug-status' + (type ? ' ' + type : '');
 }
 
 function getLastAssistantMessage(msgs) {
@@ -89,6 +114,49 @@ function buildExportFileName(ext) {
     return `geomind-last-answer-${stamp}.${ext}`;
 }
 
+function loadExternalScript(src) {
+    if (SCRIPT_PROMISES.has(src)) {
+        return SCRIPT_PROMISES.get(src);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+            if (existing.dataset.loaded === 'true') {
+                resolve();
+                return;
+            }
+            existing.addEventListener('load', () => resolve(), { once: true });
+            existing.addEventListener('error', () => reject(new Error('script load failed')), { once: true });
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.crossOrigin = 'anonymous';
+        script.async = true;
+        script.addEventListener('load', () => {
+            script.dataset.loaded = 'true';
+            resolve();
+        }, { once: true });
+        script.addEventListener('error', () => reject(new Error(`failed to load ${src}`)), { once: true });
+        document.head.appendChild(script);
+    });
+
+    SCRIPT_PROMISES.set(src, promise);
+    return promise;
+}
+
+async function ensureDocxExportLibs() {
+    await loadExternalScript('https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js');
+    await loadExternalScript('https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js');
+}
+
+async function ensurePdfExportLibs() {
+    await loadExternalScript('https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js');
+    await loadExternalScript('https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.min.js');
+}
+
 function markdownToPlainLines(text) {
     return normalizeAssistantMarkdown(text)
         .replace(/\r\n/g, '\n')
@@ -97,7 +165,13 @@ function markdownToPlainLines(text) {
 }
 
 async function exportLastAnswerDocx() {
-    if (!lastAssistantText.trim() || typeof docx === 'undefined' || typeof saveAs === 'undefined') return;
+    if (!lastAssistantText.trim()) return;
+    try {
+        await ensureDocxExportLibs();
+    } catch (e) {
+        addMessageBubble('assistant', 'Не удалось загрузить библиотеки для экспорта DOCX.');
+        return;
+    }
 
     const paragraphs = markdownToPlainLines(lastAssistantText).map((line) => {
         const trimmed = line.trim();
@@ -140,68 +214,85 @@ async function exportLastAnswerDocx() {
 }
 
 function exportLastAnswerPdf() {
-    if (!lastAssistantText.trim() || typeof pdfMake === 'undefined') return;
+    if (!lastAssistantText.trim()) return;
+    ensurePdfExportLibs()
+        .then(() => {
+            const content = markdownToPlainLines(lastAssistantText).map((line) => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    return { text: ' ', margin: [0, 0, 0, 8] };
+                }
 
-    const content = markdownToPlainLines(lastAssistantText).map((line) => {
-        const trimmed = line.trim();
-        if (!trimmed) {
-            return { text: ' ', margin: [0, 0, 0, 8] };
-        }
+                const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+                if (headingMatch) {
+                    const fontSizeMap = { 1: 18, 2: 16, 3: 15, 4: 14, 5: 13, 6: 12 };
+                    return {
+                        text: headingMatch[2],
+                        bold: true,
+                        fontSize: fontSizeMap[headingMatch[1].length],
+                        margin: [0, 8, 0, 6],
+                    };
+                }
 
-        const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
-        if (headingMatch) {
-            const fontSizeMap = { 1: 18, 2: 16, 3: 15, 4: 14, 5: 13, 6: 12 };
-            return {
-                text: headingMatch[2],
-                bold: true,
-                fontSize: fontSizeMap[headingMatch[1].length],
-                margin: [0, 8, 0, 6],
-            };
-        }
+                return {
+                    text: trimmed.replace(/^[-*]\s+/, '• '),
+                    fontSize: 12,
+                    margin: [0, 0, 0, 6],
+                };
+            });
 
-        return {
-            text: trimmed.replace(/^[-*]\s+/, '• '),
-            fontSize: 12,
-            margin: [0, 0, 0, 6],
-        };
-    });
-
-    pdfMake.createPdf({
-        pageSize: 'A4',
-        pageMargins: [40, 48, 40, 48],
-        defaultStyle: {
-            font: 'Roboto',
-            fontSize: 12,
-        },
-        content,
-    }).download(buildExportFileName('pdf'));
+            pdfMake.createPdf({
+                pageSize: 'A4',
+                pageMargins: [40, 48, 40, 48],
+                defaultStyle: {
+                    font: 'Roboto',
+                    fontSize: 12,
+                },
+                content,
+            }).download(buildExportFileName('pdf'));
+        })
+        .catch(() => {
+            addMessageBubble('assistant', 'Не удалось загрузить библиотеки для экспорта PDF.');
+        });
 }
 
 // ---------- Stats ----------
+function applyStats(stats) {
+    document.getElementById('stat-requests-30d').textContent = stats.requests_30d;
+
+    const rem = document.getElementById('stat-remaining');
+    rem.textContent = stats.remaining;
+    rem.className = 'value' + (stats.remaining <= 2 ? ' danger' : stats.remaining <= 5 ? ' warn' : '');
+
+    const badge = document.getElementById('plan-badge');
+    badge.textContent = stats.plan.charAt(0).toUpperCase() + stats.plan.slice(1);
+    badge.className = 'plan-badge ' + stats.plan;
+}
+
+function applyProfile(me) {
+    document.getElementById('user-email').textContent = me.email || localStorage.getItem('email') || '—';
+    injectAdminLink(Boolean(me.is_admin));
+}
+
+async function loadMe() {
+    const res = await fetch(API + '/api/me', { headers });
+    if (res.status === 401) {
+        logout();
+        return;
+    }
+    if (!res.ok) return;
+    applyProfile(await res.json());
+}
+
 async function loadStats() {
     const res = await fetch(API + '/api/stats', { headers });
     if (res.status === 401) { logout(); return; }
     const s = await res.json();
-
-    document.getElementById('stat-today').textContent = s.today;
-    document.getElementById('stat-week').textContent = s.week;
-    document.getElementById('stat-month').textContent = s.month;
-
-    const rem = document.getElementById('stat-remaining');
-    rem.textContent = s.remaining;
-    rem.className = 'value' + (s.remaining <= 2 ? ' danger' : s.remaining <= 5 ? ' warn' : '');
-
-    const badge = document.getElementById('plan-badge');
-    badge.textContent = s.plan.charAt(0).toUpperCase() + s.plan.slice(1);
-    badge.className = 'plan-badge ' + s.plan;
-
-    document.getElementById('user-email').textContent = localStorage.getItem('email') || '—';
+    applyStats(s);
 }
 
 // ---------- Chats ----------
-async function loadChats() {
-    const res = await fetch(API + '/api/chats', { headers });
-    const chats = await res.json();
+function renderChatList(chats) {
     chatList.innerHTML = '';
     chats.forEach(c => {
         const div = document.createElement('div');
@@ -246,6 +337,35 @@ async function loadChats() {
         div.appendChild(actions);
         chatList.appendChild(div);
     });
+}
+
+async function loadChats() {
+    const res = await fetch(API + '/api/chats', { headers });
+    const chats = await res.json();
+    renderChatList(chats);
+}
+
+async function loadDashboardBootstrap() {
+    const res = await fetch(API + '/api/bootstrap', { headers });
+    if (res.status === 401) {
+        logout();
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error('bootstrap failed');
+    }
+    const data = await res.json();
+    window.__GEOMIND_BOOTSTRAP__ = data;
+    if (data.me) {
+        applyProfile(data.me);
+    }
+    if (data.stats) {
+        applyStats(data.stats);
+    }
+    if (Array.isArray(data.chats)) {
+        renderChatList(data.chats);
+    }
+    return data;
 }
 
 async function deleteChat(chatId) {
@@ -376,6 +496,60 @@ function hideTyping() {
     if (t) t.remove();
 }
 
+// ---------- Bug reports ----------
+function toggleBugReportPanel() {
+    if (!reportBugPanel) return;
+    const shouldOpen = reportBugPanel.hidden;
+    reportBugPanel.hidden = !shouldOpen;
+    if (shouldOpen) {
+        setBugReportStatus('');
+        if (reportBugText) reportBugText.focus();
+    }
+}
+
+async function submitBugReport() {
+    if (!reportBugText || !reportBugSendBtn) return;
+
+    const text = reportBugText.value.trim();
+    if (!text) {
+        setBugReportStatus('Введите описание ошибки', 'error');
+        reportBugText.focus();
+        return;
+    }
+
+    reportBugSendBtn.disabled = true;
+    setBugReportStatus('Отправка...');
+
+    try {
+        const res = await fetch(API + '/api/bug-reports', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                text,
+                chat_id: currentChatId,
+                page_url: window.location.href,
+            }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            setBugReportStatus(data.detail || 'Не удалось отправить', 'error');
+            return;
+        }
+
+        reportBugText.value = '';
+        setBugReportStatus('Отправлено', 'success');
+        window.setTimeout(() => {
+            if (reportBugPanel) reportBugPanel.hidden = true;
+            setBugReportStatus('');
+        }, 1500);
+    } catch (e) {
+        setBugReportStatus('Ошибка соединения', 'error');
+    } finally {
+        reportBugSendBtn.disabled = false;
+    }
+}
+
 // ---------- Send ----------
 async function send() {
     const query = queryInput.value.trim();
@@ -430,6 +604,16 @@ newChatBtn.addEventListener('click', () => {
 });
 if (exportDocxBtn) exportDocxBtn.addEventListener('click', exportLastAnswerDocx);
 if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportLastAnswerPdf);
+if (reportBugBtn) reportBugBtn.addEventListener('click', toggleBugReportPanel);
+if (reportBugSendBtn) reportBugSendBtn.addEventListener('click', submitBugReport);
+if (reportBugText) {
+    reportBugText.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            submitBugReport();
+        }
+    });
+}
 
 // ---------- Logout ----------
 function logout() {
@@ -440,6 +624,11 @@ function logout() {
 logoutBtn.addEventListener('click', logout);
 
 // ---------- Init ----------
-loadStats();
-loadChats();
+window.__geomindBootstrapPromise = loadDashboardBootstrap().catch(() => {
+    document.getElementById('user-email').textContent = localStorage.getItem('email') || '—';
+    loadMe();
+    loadStats();
+    loadChats();
+    return null;
+});
 updateExportButtons();

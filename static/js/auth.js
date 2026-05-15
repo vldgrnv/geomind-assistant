@@ -12,12 +12,20 @@ const subtitle = document.getElementById('auth-subtitle');
 
 const params = new URLSearchParams(window.location.search);
 const pendingPlan = params.get('plan');
+const nextPath = params.get('next');
+
+function getSafeNextPath() {
+    if (!nextPath || !nextPath.startsWith('/') || nextPath.startsWith('//')) {
+        return '/static/dashboard.html';
+    }
+    return nextPath;
+}
 
 if (localStorage.getItem('token')) {
     if (pendingPlan) {
         activatePlan(pendingPlan);
     } else {
-        window.location.href = '/static/dashboard.html';
+        window.location.href = getSafeNextPath();
     }
 }
 
@@ -67,7 +75,7 @@ form.addEventListener('submit', async (e) => {
         if (pendingPlan) {
             await activatePlan(pendingPlan);
         } else {
-            window.location.href = '/static/dashboard.html';
+            window.location.href = getSafeNextPath();
         }
     } catch (err) {
         errorDiv.textContent = err.message;

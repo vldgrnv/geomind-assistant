@@ -49,3 +49,12 @@ OUTPUTS_BY_INPUT = {
 
 def is_valid_pair(input_key: str, output_key: str) -> bool:
     return output_key in OUTPUTS_BY_INPUT.get(input_key, [])
+
+
+def build_options_payload():
+    return {
+        "inputs": INPUT_META,
+        "outputs_by_input": OUTPUTS_BY_INPUT,
+        "output_labels": OUTPUT_LABELS,
+        "output_hints": OUTPUT_HINTS,
+    }

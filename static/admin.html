@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoMind Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=perf-ops-4">
+    <link rel="stylesheet" href="/static/css/style.min.css?v=perf-ops-4">
+</head>
+<body>
+<div class="admin-page">
+    <header class="admin-header">
+        <div>
+            <div class="admin-eyebrow">Админ-панель</div>
+            <h1>GeoMind Database</h1>
+            <p class="admin-subtitle">Пользователи, запросы, чаты, сообщения и ошибки в одном месте.</p>
+        </div>
+        <div class="admin-header-actions">
+            <a href="/static/dashboard.html" class="btn btn-outline">К чатам</a>
+            <button type="button" class="btn btn-ghost" id="admin-logout-btn">Выйти</button>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <section class="admin-stats-grid" id="admin-stats-grid"></section>
+
+        <section class="admin-section">
+            <div class="admin-section-head">
+                <h2>Пользователи</h2>
+                <div class="admin-table-note">Сортировка по числу запросов</div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="admin-users-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>План</th>
+                        <th>Осталось</th>
+                        <th>Чаты</th>
+                        <th>Сообщения</th>
+                        <th>Запросы 30д</th>
+                        <th>Ошибки</th>
+                        <th>Последняя активность</th>
+                        <th>Регистрация</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="admin-grid-2">
+            <section class="admin-section">
+                <div class="admin-section-head">
+                    <h2>Сообщения об ошибках</h2>
+                    <div class="admin-table-note">Последние 100</div>
+                </div>
+                <div class="admin-cards" id="admin-bug-reports"></div>
+            </section>
+
+            <section class="admin-section">
+                <div class="admin-section-head">
+                    <h2>Последние чаты</h2>
+                    <div class="admin-table-note">Последние 100</div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="admin-chats-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Название</th>
+                            <th>Сообщений</th>
+                            <th>Создан</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+
+        <section class="admin-section">
+            <div class="admin-section-head">
+                <h2>Последние сообщения</h2>
+                <div class="admin-table-note">Последние 100 записей</div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="admin-messages-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Пользователь</th>
+                        <th>Чат</th>
+                        <th>Роль</th>
+                        <th>Текст</th>
+                        <th>Дата</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="/static/js/admin.min.js?v=perf-ops-4"></script>
+</body>
+</html>

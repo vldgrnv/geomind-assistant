@@ -1,18 +1,14 @@
-import glob
-import os
 import re
 
 from .yandex_gpt import ask
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from .search_algorithm import get_algorithm_index
 
 
 def _collect_metadata():
     """Собирает название, ключевые слова и примеры промтов из каждого .md файла."""
     blocks = []
-    for path in sorted(glob.glob(os.path.join(BASE_DIR, "algorithms/*.md"))):
-        with open(path, encoding="utf-8") as f:
-            text = f.read()
+    for path in get_algorithm_index().paths:
+        text = get_algorithm_index().raw_texts[path]
 
         lines = text.splitlines()
         title = lines[0][2:].strip() if lines and lines[0].startswith("# ") else path

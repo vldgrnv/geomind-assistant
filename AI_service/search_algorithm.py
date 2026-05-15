@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+from dataclasses import dataclass
 
 import pymorphy3
 from rank_bm25 import BM25Okapi
@@ -10,6 +11,7 @@ import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 morph = pymorphy3.MorphAnalyzer()
+ALGORITHMS_GLOB = os.path.join(BASE_DIR, "algorithms/*.md")
 
 # ---------- Словарь синонимов (ГИС-домен) ----------
 SYNONYMS = {
@@ -185,6 +187,70 @@ def load_algorithms(apply_lemma=True):
     return docs, paths
 
 
+@dataclass
+class AlgorithmIndex:
+    version: tuple[tuple[str, int], ...]
+    docs_lemma: list[str]
+    paths: list[str]
+    raw_texts: dict[str, str]
+    tfidf_vectorizer: TfidfVectorizer
+    tfidf_docs_matrix: object
+    bm25: BM25Okapi
+
+
+_INDEX_CACHE: AlgorithmIndex | None = None
+
+
+def _algorithms_version():
+    version = []
+    for path in sorted(glob.glob(ALGORITHMS_GLOB)):
+        version.append((path, int(os.path.getmtime(path))))
+    return tuple(version)
+
+
+def _build_index() -> AlgorithmIndex:
+    docs_lemma = []
+    paths = []
+    raw_texts = {}
+    for path in sorted(glob.glob(ALGORITHMS_GLOB)):
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        raw_texts[path] = text
+        docs_lemma.append(lemmatize(_extract_sections(text)))
+        paths.append(path)
+
+    vectorizer = TfidfVectorizer(
+        ngram_range=(1, 2),
+        sublinear_tf=True,
+        min_df=1,
+        max_df=0.9,
+    )
+    tfidf_docs_matrix = vectorizer.fit_transform(docs_lemma)
+    bm25 = BM25Okapi([doc.split() for doc in docs_lemma])
+
+    return AlgorithmIndex(
+        version=_algorithms_version(),
+        docs_lemma=docs_lemma,
+        paths=paths,
+        raw_texts=raw_texts,
+        tfidf_vectorizer=vectorizer,
+        tfidf_docs_matrix=tfidf_docs_matrix,
+        bm25=bm25,
+    )
+
+
+def get_algorithm_index() -> AlgorithmIndex:
+    global _INDEX_CACHE
+    current_version = _algorithms_version()
+    if _INDEX_CACHE is None or _INDEX_CACHE.version != current_version:
+        _INDEX_CACHE = _build_index()
+    return _INDEX_CACHE
+
+
+def get_algorithm_text(path):
+    return get_algorithm_index().raw_texts[path]
+
+
 def _normalize(arr):
     """Min-max нормализация массива в [0, 1]."""
     mn, mx = arr.min(), arr.max()
@@ -196,32 +262,22 @@ def _normalize(arr):
 def search(query, top_n=3):
     """Комбинированный поиск: TF-IDF (биграммы) + BM25.
     Возвращает список (путь, score) для top_n результатов."""
-    docs, paths = load_algorithms(apply_lemma=True)
+    index = get_algorithm_index()
 
     # Расширяем запрос синонимами, затем лемматизируем
     expanded = expand_query(query)
     q_lemma = lemmatize(expanded)
 
-    # --- TF-IDF с биграммами ---
-    vectorizer = TfidfVectorizer(
-        ngram_range=(1, 2),
-        sublinear_tf=True,
-        min_df=1,
-        max_df=0.9,
-    )
-    tfidf = vectorizer.fit_transform(docs + [q_lemma])
-    tfidf_scores = cosine_similarity(tfidf[-1:], tfidf[:-1])[0]
+    query_tfidf = index.tfidf_vectorizer.transform([q_lemma])
+    tfidf_scores = cosine_similarity(query_tfidf, index.tfidf_docs_matrix)[0]
 
-    # --- BM25 ---
-    tokenized_docs = [d.split() for d in docs]
-    bm25 = BM25Okapi(tokenized_docs)
-    bm25_scores = np.array(bm25.get_scores(q_lemma.split()))
+    bm25_scores = np.array(index.bm25.get_scores(q_lemma.split()))
 
     # --- Комбинированный скор ---
     combined = 0.5 * _normalize(tfidf_scores) + 0.5 * _normalize(bm25_scores)
 
     top_idxs = combined.argsort()[::-1][:top_n]
-    return [(paths[i], combined[i]) for i in top_idxs]
+    return [(index.paths[i], combined[i]) for i in top_idxs]
 
 
 if __name__ == "__main__":

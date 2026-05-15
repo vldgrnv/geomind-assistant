@@ -140,11 +140,21 @@
         async function loadOptions() {
             hintEl.textContent = 'Загрузка списков…';
             await ensureResolvedApiBase();
+            if (window.__geomindBootstrapPromise) {
+                try {
+                    await window.__geomindBootstrapPromise;
+                } catch (_e) {}
+            }
 
             let data = null;
+            if (window.__GEOMIND_BOOTSTRAP__ && window.__GEOMIND_BOOTSTRAP__.convert_options) {
+                data = window.__GEOMIND_BOOTSTRAP__.convert_options;
+            }
             try {
-                const res = await fetch(apiUrl('/api/convert/options'), { cache: 'no-store' });
-                if (res.ok) data = await res.json();
+                if (!data) {
+                    const res = await fetch(apiUrl('/api/convert/options'), { cache: 'no-store' });
+                    if (res.ok) data = await res.json();
+                }
             } catch (_e) {}
 
             if (!data) {

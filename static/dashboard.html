@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Если открываете ЛК не с порта приложения: <meta name="geomind-api-base" content="http://127.0.0.1:8000"> -->
     <title>GeoMind — Личный кабинет</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=9">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=perf-ops-4">
+    <link rel="stylesheet" href="/static/css/style.min.css?v=perf-ops-4">
 </head>
 <body>
 <div class="dashboard">
@@ -14,6 +15,28 @@
         <h2>💬 Чаты</h2>
         <button class="btn btn-primary btn-full" id="new-chat-btn" style="margin-bottom:12px">+ Новый чат</button>
         <div class="chat-list" id="chat-list"></div>
+        <div class="sidebar-left-bottom">
+            <div class="report-bug-widget" id="report-bug-widget">
+                <div class="report-bug-panel" id="report-bug-panel" hidden>
+                    <textarea
+                        class="report-bug-textarea"
+                        id="report-bug-text"
+                        placeholder="Коротко опишите, что сломалось"
+                    ></textarea>
+                    <div class="report-bug-actions">
+                        <span class="report-bug-status" id="report-bug-status"></span>
+                        <button class="btn btn-primary report-bug-send-btn" id="report-bug-send-btn" type="button">
+                            Отправить
+                        </button>
+                    </div>
+                </div>
+                <button
+                    class="btn btn-outline btn-full report-bug-btn"
+                    id="report-bug-btn"
+                    type="button"
+                >Сообщить об ошибке</button>
+            </div>
+        </div>
     </aside>
 
     <!-- Chat Area -->
@@ -51,16 +74,8 @@
             <h3>Статистика запросов</h3>
             <div class="stat-grid">
                 <div class="stat-item">
-                    <span class="label">Сегодня</span>
-                    <span class="value" id="stat-today">—</span>
-                </div>
-                <div class="stat-item">
-                    <span class="label">Неделя</span>
-                    <span class="value" id="stat-week">—</span>
-                </div>
-                <div class="stat-item">
-                    <span class="label">Месяц</span>
-                    <span class="value" id="stat-month">—</span>
+                    <span class="label">За 30 дней</span>
+                    <span class="value" id="stat-requests-30d">—</span>
                 </div>
                 <div class="stat-item">
                     <span class="label">Остаток</span>
@@ -107,11 +122,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.min.js" crossorigin="anonymous"></script>
-<script src="/static/js/chat.js?v=8"></script>
-<script src="/static/js/converter.js?v=5"></script>
+<script src="/static/js/chat.min.js?v=perf-ops-4"></script>
+<script src="/static/js/converter.min.js?v=perf-ops-4"></script>
 </body>
 </html>

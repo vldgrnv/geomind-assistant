@@ -7,7 +7,7 @@
 set -e
 
 APP_DIR="/opt/geomind-assistant"
-DOMAIN="geomind.ru"  # ← Заменить на ваш домен
+DOMAIN="geomind.pro"
 
 echo "==== 1. Обновление системы ===="
 apt update && apt upgrade -y
@@ -51,7 +51,7 @@ systemctl start geomind
 
 echo "==== 9. SSL (Let's Encrypt) ===="
 echo "Для получения SSL-сертификата выполните:"
-echo "  sudo certbot --nginx -d $DOMAIN"
+echo "  sudo certbot --nginx -d $DOMAIN -d www.$DOMAIN"
 echo ""
 
 echo "==== ✅ Готово! ===="

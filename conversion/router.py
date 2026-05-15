@@ -7,7 +7,7 @@ from starlette.responses import FileResponse
 
 from auth.jwt import get_current_user_id
 from conversion.engine import cleanup_workdir, convert_file
-from conversion.options import INPUT_META, OUTPUT_HINTS, OUTPUT_LABELS, OUTPUTS_BY_INPUT
+from conversion.options import build_options_payload
 
 router = APIRouter(prefix="/api", tags=["convert"])
 
@@ -17,12 +17,7 @@ MAX_UPLOAD_BYTES = 200 * 1024 * 1024
 @router.get("/convert/options")
 def convert_options():
     """Публичный справочник пар форматов для UI (не секрет). Конвертация — только с JWT."""
-    return {
-        "inputs": INPUT_META,
-        "outputs_by_input": OUTPUTS_BY_INPUT,
-        "output_labels": OUTPUT_LABELS,
-        "output_hints": OUTPUT_HINTS,
-    }
+    return build_options_payload()
 
 
 @router.post("/convert")

@@ -18,7 +18,7 @@ from conversion.router import router as convert_router
 from AI_service.search_algorithm import get_algorithm_index
 
 
-APP_VERSION = "project-logo-1"
+APP_VERSION = "landing-chat-1"
 logger = logging.getLogger("geomind.app")
 
 

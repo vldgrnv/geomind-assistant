@@ -160,6 +160,18 @@ def create_bug_report(user_id, text, chat_id=None, page_url=None, user_agent=Non
         return cur.lastrowid
 
 
+def create_contact_request(email, text, page_url=None, user_agent=None):
+    with get_db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO contact_requests (email, text, page_url, user_agent)
+            VALUES (?, ?, ?, ?)
+            """,
+            (email, text, page_url, user_agent),
+        )
+        return cur.lastrowid
+
+
 def get_messages_for_user(chat_id, user_id, conn=None):
     if not get_chat_for_user(chat_id, user_id, conn=conn):
         return None
@@ -224,6 +236,7 @@ def get_admin_overview():
             "SELECT COUNT(*) FROM messages WHERE role = 'user'"
         ).fetchone()[0]
         bug_reports_total = conn.execute("SELECT COUNT(*) FROM bug_reports").fetchone()[0]
+        contact_requests_total = conn.execute("SELECT COUNT(*) FROM contact_requests").fetchone()[0]
         requests_today = conn.execute(
             """
             SELECT COUNT(*) FROM messages
@@ -249,6 +262,7 @@ def get_admin_overview():
         "chats_total": chats_total,
         "messages_total": messages_total,
         "bug_reports_total": bug_reports_total,
+        "contact_requests_total": contact_requests_total,
         "requests_today": requests_today,
         "requests_30d": requests_month,
         "active_users_30d": active_users_month,
@@ -307,6 +321,18 @@ def get_admin_bug_reports(limit=100):
         FROM bug_reports br
         JOIN users u ON u.id = br.user_id
         ORDER BY br.created_at DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+
+
+def get_admin_contact_requests(limit=100):
+    return _fetchall(
+        """
+        SELECT id, email, text, page_url, user_agent, created_at
+        FROM contact_requests
+        ORDER BY created_at DESC
         LIMIT ?
         """,
         (limit,),

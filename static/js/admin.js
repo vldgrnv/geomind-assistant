@@ -15,6 +15,7 @@ const usersTableBody = document.querySelector('#admin-users-table tbody');
 const chatsTableBody = document.querySelector('#admin-chats-table tbody');
 const messagesTableBody = document.querySelector('#admin-messages-table tbody');
 const bugReportsContainer = document.getElementById('admin-bug-reports');
+const contactRequestsContainer = document.getElementById('admin-contact-requests');
 const logoutBtn = document.getElementById('admin-logout-btn');
 
 function escapeHtml(text) {
@@ -42,6 +43,7 @@ function renderOverview(overview) {
         ['Чаты', overview.chats_total],
         ['Сообщения', overview.messages_total],
         ['Ошибки', overview.bug_reports_total],
+        ['Сотрудничество', overview.contact_requests_total],
         ['Запросы за 30 дней', overview.requests_30d],
         ['Активные юзеры за 30 дней', overview.active_users_30d],
     ];
@@ -118,6 +120,28 @@ function renderBugReports(bugReports) {
     `).join('');
 }
 
+function renderContactRequests(contactRequests) {
+    if (!contactRequestsContainer) return;
+    if (!contactRequests.length) {
+        contactRequestsContainer.innerHTML = '<div class="admin-empty">Пока нет вопросов о сотрудничестве.</div>';
+        return;
+    }
+
+    contactRequestsContainer.innerHTML = contactRequests.map((request) => `
+        <article class="admin-card">
+            <div class="admin-card-meta">
+                <strong>#${request.id}</strong>
+                <span>${escapeHtml(request.email)}</span>
+                <span>${escapeHtml(formatDate(request.created_at))}</span>
+            </div>
+            <div class="admin-card-text">${escapeHtml(request.text)}</div>
+            <div class="admin-card-foot">
+                <span title="${escapeHtml(request.page_url || '')}">${escapeHtml(truncate(request.page_url || '—', 80))}</span>
+            </div>
+        </article>
+    `).join('');
+}
+
 async function loadAdminDashboard() {
     const meRes = await fetch(API + '/api/me', { headers });
     if (meRes.status === 401) {
@@ -141,6 +165,7 @@ async function loadAdminDashboard() {
     renderChats(data.recent_chats);
     renderMessages(data.recent_messages);
     renderBugReports(data.bug_reports);
+    renderContactRequests(data.contact_requests || []);
 }
 
 function logout() {

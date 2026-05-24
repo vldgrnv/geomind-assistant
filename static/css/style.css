@@ -911,16 +911,25 @@ a:hover { color: var(--accent-hover); }
 }
 
 /* --- Sections common --- */
-.features, .how-it-works, .pricing {
+.features, .how-it-works, .pricing, .about-project, .contacts-section {
     position: relative;
     max-width: 1100px; margin: 0 auto;
     padding: 80px 24px; text-align: center;
 }
-.features h2, .how-it-works h2, .pricing h2 {
+.features h2, .how-it-works h2, .pricing h2, .about-project h2, .contacts-section h2 {
     font-size: 32px; font-weight: 700; margin-bottom: 8px;
 }
 .section-desc {
     color: var(--text-secondary); font-size: 16px; margin-bottom: 48px;
+}
+.section-kicker {
+    display: inline-flex;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
 }
 
 /* --- Features Grid --- */
@@ -937,6 +946,66 @@ a:hover { color: var(--accent-hover); }
 .feature-icon { font-size: 32px; margin-bottom: 16px; }
 .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .feature-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* --- About project --- */
+.about-project {
+    text-align: left;
+}
+.about-project-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+    gap: 28px;
+    align-items: stretch;
+}
+.about-project-copy,
+.support-card {
+    background: rgba(26, 29, 39, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--radius);
+}
+.about-project-copy {
+    padding: 36px;
+}
+.about-project-copy p {
+    max-width: 680px;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.75;
+}
+.support-card {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    padding: 28px;
+    background:
+        linear-gradient(135deg, rgba(108, 92, 231, 0.18), rgba(16, 185, 129, 0.08)),
+        rgba(26, 29, 39, 0.88);
+}
+.support-mark {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+}
+.support-title {
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 8px;
+}
+.support-text {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
 
 /* --- How it works --- */
 .steps-grid {
@@ -959,6 +1028,101 @@ a:hover { color: var(--accent-hover); }
 
 /* --- Pricing (on landing) --- */
 .pricing .plans-grid { margin: 0 auto; }
+
+/* --- Contacts --- */
+.contacts-section {
+    text-align: left;
+}
+.contacts-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+    gap: 28px;
+    align-items: stretch;
+}
+.contacts-copy,
+.feedback-card {
+    background: rgba(26, 29, 39, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--radius);
+}
+.contacts-copy {
+    padding: 36px;
+}
+.contacts-copy p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+.contact-list {
+    display: grid;
+    gap: 12px;
+}
+.contact-item {
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-sm);
+    background: rgba(15, 17, 23, 0.45);
+}
+.contact-item span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+.contact-item strong,
+.contact-item a {
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 700;
+}
+.contact-item a:hover {
+    color: var(--accent-hover);
+}
+.feedback-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 32px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.16);
+}
+.feedback-head h3 {
+    font-size: 22px;
+    line-height: 1.25;
+    margin-bottom: 8px;
+}
+.feedback-head p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+.feedback-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.feedback-field span {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+}
+.feedback-textarea {
+    min-height: 150px;
+    resize: vertical;
+    line-height: 1.55;
+}
+.feedback-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.feedback-status {
+    min-height: 1.4em;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+.feedback-status.success { color: var(--success); }
+.feedback-status.error { color: var(--danger); }
 
 /* --- Footer --- */
 .landing-footer {
@@ -995,6 +1159,10 @@ a:hover { color: var(--accent-hover); }
     }
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+    .about-project-inner,
+    .contacts-inner {
+        grid-template-columns: 1fr;
     }
     .plans-grid {
         grid-template-columns: 1fr;
@@ -1081,7 +1249,9 @@ a:hover { color: var(--accent-hover); }
     }
     .features,
     .how-it-works,
-    .pricing {
+    .pricing,
+    .about-project,
+    .contacts-section {
         padding: 64px 24px;
     }
     .section-desc {
@@ -1095,8 +1265,19 @@ a:hover { color: var(--accent-hover); }
     }
     .feature-card,
     .step-card,
-    .plan-card {
+    .plan-card,
+    .about-project-copy,
+    .support-card,
+    .contacts-copy,
+    .feedback-card {
         padding: 24px;
+    }
+    .support-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .feedback-actions .btn {
+        width: 100%;
     }
 }
 

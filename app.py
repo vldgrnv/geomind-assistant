@@ -18,7 +18,7 @@ from conversion.router import router as convert_router
 from AI_service.search_algorithm import get_algorithm_index
 
 
-APP_VERSION = "perf-ops-4"
+APP_VERSION = "project-info-1"
 logger = logging.getLogger("geomind.app")
 
 
@@ -107,6 +107,7 @@ async def request_middleware(request: Request, call_next):
         "/auth/login": (12, 60),
         "/auth/register": (6, 600),
         "/api/bug-reports": (8, 600),
+        "/api/contact-requests": (5, 600),
     }
     limit = path_limits.get(request.url.path)
     if limit:

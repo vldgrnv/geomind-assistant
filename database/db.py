@@ -72,6 +72,15 @@ def init_db():
                 FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE SET NULL
             );
 
+            CREATE TABLE IF NOT EXISTS contact_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                text TEXT NOT NULL,
+                page_url TEXT,
+                user_agent TEXT,
+                created_at TEXT DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now'))
+            );
+
             CREATE INDEX IF NOT EXISTS idx_chats_user_id ON chats(user_id);
             CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
             CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
@@ -80,6 +89,7 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_chats_user_id_id ON chats(user_id, id);
             CREATE INDEX IF NOT EXISTS idx_bug_reports_user_id ON bug_reports(user_id);
             CREATE INDEX IF NOT EXISTS idx_bug_reports_created_at ON bug_reports(created_at);
+            CREATE INDEX IF NOT EXISTS idx_contact_requests_created_at ON contact_requests(created_at);
         """)
 
 

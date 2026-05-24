@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeoMind — ИИ-ассистент для ГИС-специалистов</title>
     <meta name="description" content="Чат-бот с базой знаний алгоритмов геообработки. Получайте пошаговые инструкции для ArcMap и QGIS.">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=perf-ops-4">
-    <link rel="stylesheet" href="/static/css/style.min.css?v=perf-ops-4">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=project-info-1">
+    <link rel="stylesheet" href="/static/css/style.min.css?v=project-info-1">
 </head>
 <body>
 <div class="landing-mesh-bg" aria-hidden="true">
@@ -19,6 +19,8 @@
     <div class="nav-inner">
         <div class="nav-logo">🌍 <span>GeoMind</span></div>
         <div class="nav-links">
+            <a href="#contacts">Контакты</a>
+            <a href="#about">О проекте</a>
             <a href="#features">Возможности</a>
             <a href="#pricing">Тарифы</a>
             <a href="/static/login.html" class="btn btn-primary">Войти</a>
@@ -42,7 +44,7 @@
         </div>
         <div class="hero-stats">
             <div class="hero-stat">
-                <div class="hero-stat-value">12+</div>
+                <div class="hero-stat-value">100+</div>
                 <div class="hero-stat-label">Алгоритмов</div>
             </div>
             <div class="hero-stat">
@@ -65,7 +67,7 @@
         <div class="feature-card">
             <div class="feature-icon">📚</div>
             <h3>База алгоритмов</h3>
-            <p>12+ документированных алгоритмов: буферный анализ, клип, пересечение, интерполяция и другие</p>
+            <p>100+ документированных алгоритмов: буферный анализ, клип, пересечение, интерполяция и другие</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon">🤖</div>
@@ -81,6 +83,29 @@
             <div class="feature-icon">💬</div>
             <h3>История чатов</h3>
             <p>Все ваши запросы и ответы сохраняются — возвращайтесь к ним в любое время</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== About ===== -->
+<section class="about-project" id="about">
+    <div class="about-project-inner">
+        <div class="about-project-copy">
+            <span class="section-kicker">О проекте</span>
+            <h2>GeoMind развивается как технологический стартап для ГИС-специалистов</h2>
+            <p>
+                Проект разработан в рамках программы «Студенческий стартап» при поддержке
+                Фонда содействия инновациям. Мы создаём сервис, который помогает быстрее
+                находить подходящие алгоритмы геообработки и получать понятные инструкции
+                для практической работы в ArcMap и QGIS.
+            </p>
+        </div>
+        <div class="support-card" aria-label="Поддержка проекта">
+            <div class="support-mark">ФСИ</div>
+            <div>
+                <div class="support-title">При поддержке Фонда содействия инновациям</div>
+                <div class="support-text">Программа «Студенческий стартап»</div>
+            </div>
         </div>
     </div>
 </section>
@@ -152,6 +177,57 @@
     </div>
 </section>
 
+<!-- ===== Contacts ===== -->
+<section class="contacts-section" id="contacts">
+    <div class="contacts-inner">
+        <div class="contacts-copy">
+            <span class="section-kicker">Контакты</span>
+            <h2>Свяжитесь с командой GeoMind</h2>
+            <p>
+                Открыты к партнёрствам, пилотным внедрениям и обсуждению задач в сфере
+                геоинформационных систем.
+            </p>
+            <div class="contact-list">
+                <div class="contact-item">
+                    <span>Организация</span>
+                    <strong>ООО «ГИС-КОД»</strong>
+                </div>
+                <div class="contact-item">
+                    <span>Город</span>
+                    <strong>г. Пермь</strong>
+                </div>
+                <div class="contact-item">
+                    <span>Телефон</span>
+                    <a href="tel:+79194560487">8 919 456-04-87</a>
+                </div>
+                <div class="contact-item">
+                    <span>Электронная почта</span>
+                    <a href="mailto:geotechperm@yandex.ru">geotechperm@yandex.ru</a>
+                </div>
+            </div>
+        </div>
+
+        <form class="feedback-card" id="cooperation-form">
+            <div class="feedback-head">
+                <h3>Вопросы о сотрудничестве</h3>
+                <p>Оставьте контакты и коротко опишите ваш запрос.</p>
+            </div>
+            <label class="feedback-field">
+                <span>Электронная почта</span>
+                <input class="input" type="email" name="email" autocomplete="email" placeholder="name@example.ru" required>
+            </label>
+            <label class="feedback-field">
+                <span>Сообщение</span>
+                <textarea class="input feedback-textarea" name="message" placeholder="Расскажите, что хотите обсудить" required></textarea>
+            </label>
+            <div class="feedback-actions">
+                <button class="btn btn-primary" type="submit">Отправить</button>
+                <div class="feedback-status" id="cooperation-status" aria-live="polite"></div>
+            </div>
+        </form>
+    </div>
+</section>
+
 <!-- ===== Footer ===== -->
 <footer class="landing-footer">
     <div class="footer-inner">
@@ -161,5 +237,6 @@
     </div>
 </footer>
 
+<script src="/static/js/landing.js?v=project-info-1" defer></script>
 </body>
 </html>

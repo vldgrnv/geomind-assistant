@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -9,9 +10,9 @@ from database.models import (
     get_stats, create_chat, get_chats,
     add_message, get_user_by_id, get_chat_for_user, get_usage_snapshot,
     update_plan, PLAN_LIMITS, delete_chat, rename_chat, get_messages_for_user,
-    create_bug_report,
+    create_bug_report, create_contact_request,
     is_admin_user, get_admin_overview, get_admin_users, get_admin_bug_reports,
-    get_admin_recent_chats, get_admin_recent_messages,
+    get_admin_contact_requests, get_admin_recent_chats, get_admin_recent_messages,
 )
 from database.db import get_db
 from AI_service.main import handle
@@ -38,6 +39,12 @@ class PlanRequest(BaseModel):
 class BugReportRequest(BaseModel):
     text: str
     chat_id: Optional[int] = None
+    page_url: Optional[str] = None
+
+
+class ContactRequest(BaseModel):
+    email: str
+    text: str
     page_url: Optional[str] = None
 
 
@@ -187,6 +194,30 @@ def bug_reports_endpoint(
     return {"ok": True, "id": report_id}
 
 
+@router.post("/contact-requests")
+def contact_requests_endpoint(req: ContactRequest, request: Request):
+    email = req.email.strip()
+    text = req.text.strip()
+
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        raise HTTPException(400, "Укажите корректную электронную почту")
+    if len(email) > 254:
+        raise HTTPException(400, "Электронная почта слишком длинная")
+    if len(text) < 5:
+        raise HTTPException(400, "Опишите запрос чуть подробнее")
+    if len(text) > 3000:
+        raise HTTPException(400, "Сообщение слишком длинное")
+
+    request_id = create_contact_request(
+        email=email,
+        text=text,
+        page_url=(req.page_url or "")[:1000] or None,
+        user_agent=(request.headers.get("user-agent") or "")[:500] or None,
+    )
+    logger.info("contact_request_created id=%s email=%s text_len=%s", request_id, email, len(text))
+    return {"ok": True, "id": request_id}
+
+
 @router.get("/me")
 def me_endpoint(user_id: int = Depends(get_current_user_id)):
     user = get_user_by_id(user_id)
@@ -207,6 +238,7 @@ def admin_dashboard_endpoint(user_id: int = Depends(get_current_user_id)):
         "overview": get_admin_overview(),
         "users": get_admin_users(),
         "bug_reports": get_admin_bug_reports(),
+        "contact_requests": get_admin_contact_requests(),
         "recent_chats": get_admin_recent_chats(),
         "recent_messages": get_admin_recent_messages(),
     }

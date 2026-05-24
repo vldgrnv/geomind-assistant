@@ -1042,6 +1042,26 @@ a:hover { color: var(--accent-hover); }
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
 }
+.assistant-preview.is-animated .assistant-bubble {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+}
+.assistant-preview.is-animated .assistant-bubble.user {
+    transform: translate(28px, 18px) scale(0.98);
+}
+.assistant-preview.is-animated .assistant-bubble.assistant {
+    transform: translate(-28px, 18px) scale(0.98);
+}
+.assistant-preview.is-visible .assistant-bubble {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+    transition:
+        opacity 0.58s ease,
+        transform 0.58s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.assistant-preview.is-visible .assistant-bubble.assistant {
+    transition-delay: 0.42s;
+}
 .assistant-bubble.user {
     align-self: flex-end;
     color: #fff;
@@ -1441,5 +1461,12 @@ a:hover { color: var(--accent-hover); }
     .mesh-plane-shadow,
     .hero-glow {
         animation: none;
+    }
+    .assistant-preview.is-animated .assistant-bubble,
+    .assistant-preview.is-animated .assistant-bubble.user,
+    .assistant-preview.is-animated .assistant-bubble.assistant {
+        opacity: 1;
+        transform: none;
+        transition: none;
     }
 }

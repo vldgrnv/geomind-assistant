@@ -1,5 +1,31 @@
 const cooperationForm = document.getElementById('cooperation-form');
 const cooperationStatus = document.getElementById('cooperation-status');
+const assistantPreview = document.querySelector('.assistant-preview');
+
+function initAssistantPreviewAnimation() {
+    if (!assistantPreview) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+        assistantPreview.classList.add('is-visible');
+        return;
+    }
+
+    assistantPreview.classList.add('is-animated');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            assistantPreview.classList.add('is-visible');
+            observer.disconnect();
+        });
+    }, {
+        threshold: 0.34,
+        rootMargin: '0px 0px -12% 0px',
+    });
+
+    observer.observe(assistantPreview);
+}
 
 function setCooperationStatus(text, type = '') {
     if (!cooperationStatus) return;
@@ -52,3 +78,5 @@ async function submitCooperationForm(event) {
 if (cooperationForm) {
     cooperationForm.addEventListener('submit', submitCooperationForm);
 }
+
+initAssistantPreviewAnimation();

@@ -238,23 +238,40 @@ a:hover { color: var(--accent-hover); }
     padding: 24px; display: flex; flex-direction: column; gap: 16px;
     min-height: 0;
 }
-.message {
-    max-width: 75%; padding: 12px 16px;
-    border-radius: var(--radius); font-size: 14px;
-    line-height: 1.6; animation: fadeIn 0.3s ease;
+.message-wrap {
+    max-width: 75%; display: flex; flex-direction: column;
+    animation: fadeIn 0.3s ease;
 }
+.message-wrap.user { align-self: flex-end; }
+.message-wrap.assistant { align-self: flex-start; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.message {
+    padding: 12px 16px;
+    border-radius: var(--radius); font-size: 14px; line-height: 1.6;
+}
 .message.user {
-    align-self: flex-end;
     background: var(--accent); color: #fff;
     border-bottom-right-radius: 4px;
 }
 .message.assistant {
-    align-self: flex-start;
     background: var(--bg-secondary); color: var(--text-primary);
     border: 1px solid var(--border);
     border-bottom-left-radius: 4px;
 }
+.msg-actions {
+    display: flex; gap: 3px; margin-top: 4px;
+    opacity: 0; transition: opacity 0.15s;
+}
+.message-wrap:hover .msg-actions { opacity: 1; }
+.message-wrap.user .msg-actions { justify-content: flex-end; }
+.msg-action-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; padding: 0; border: none; border-radius: 6px;
+    background: var(--bg-tertiary); color: var(--text-secondary);
+    cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.msg-action-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.msg-action-btn.copied { color: var(--success); }
 .message-content {
     font-size: 14px;
     line-height: 1.55;
@@ -298,12 +315,23 @@ a:hover { color: var(--accent-hover); }
     padding: 0.12em 0.4em;
     border-radius: 4px;
 }
+.code-block-wrap { position: relative; margin: 0.65em 0; }
+.code-copy-btn {
+    position: absolute; top: 6px; right: 6px; z-index: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; padding: 0; border: none; border-radius: 4px;
+    background: var(--bg-secondary); color: var(--text-muted);
+    cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s;
+}
+.code-block-wrap:hover .code-copy-btn { opacity: 1; }
+.code-copy-btn:hover { color: var(--text-primary); }
+.code-copy-btn.copied { color: var(--success); opacity: 1; }
 .message-content pre {
     background: var(--bg-tertiary);
     padding: 10px 12px;
     border-radius: 6px;
     overflow-x: auto;
-    margin: 0.65em 0;
+    margin: 0;
     font-size: 13px;
     line-height: 1.45;
 }

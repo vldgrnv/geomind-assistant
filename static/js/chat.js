@@ -9,7 +9,12 @@ const headers = {
 
 let currentChatId = null;
 let lastAssistantText = '';
+let lastUserQuery = '';
 const SCRIPT_PROMISES = new Map();
+
+const ICON_COPY = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`;
+const ICON_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const ICON_REGEN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>`;
 
 if (typeof marked !== 'undefined' && marked.use) {
     marked.use({ gfm: true, breaks: true });
@@ -450,6 +455,13 @@ async function openChat(chatId) {
     renderMessages(msgs);
 }
 
+function getLastUserMessage(msgs) {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+        if (msgs[i].role === 'user' && typeof msgs[i].text === 'string') return msgs[i].text;
+    }
+    return '';
+}
+
 function renderMessages(msgs) {
     messagesDiv.innerHTML = '';
     if (!msgs.length) {
@@ -459,12 +471,55 @@ function renderMessages(msgs) {
     }
     msgs.forEach(m => addMessageBubble(m.role, m.text));
     setLastAssistantText(getLastAssistantMessage(msgs));
+    lastUserQuery = getLastUserMessage(msgs);
+}
+
+function makeCopyBtn(getText, extraClass) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'msg-action-btn' + (extraClass ? ' ' + extraClass : '');
+    btn.title = 'Копировать';
+    btn.innerHTML = ICON_COPY;
+    btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(getText()).then(() => {
+            btn.innerHTML = ICON_CHECK;
+            btn.classList.add('copied');
+            setTimeout(() => { btn.innerHTML = ICON_COPY; btn.classList.remove('copied'); }, 1500);
+        });
+    });
+    return btn;
+}
+
+function addCodeCopyButtons(container) {
+    container.querySelectorAll('pre').forEach(pre => {
+        const wrap = document.createElement('div');
+        wrap.className = 'code-block-wrap';
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'code-copy-btn';
+        btn.title = 'Копировать код';
+        btn.innerHTML = ICON_COPY;
+        btn.addEventListener('click', () => {
+            const code = pre.querySelector('code');
+            navigator.clipboard.writeText(code ? code.textContent : pre.textContent).then(() => {
+                btn.innerHTML = ICON_CHECK;
+                btn.classList.add('copied');
+                setTimeout(() => { btn.innerHTML = ICON_COPY; btn.classList.remove('copied'); }, 1500);
+            });
+        });
+        wrap.appendChild(btn);
+    });
 }
 
 function addMessageBubble(role, text) {
     if (emptyState && messagesDiv.contains(emptyState)) {
         messagesDiv.innerHTML = '';
     }
+    const wrap = document.createElement('div');
+    wrap.className = 'message-wrap ' + role;
+
     const div = document.createElement('div');
     div.className = 'message ' + role;
     if (role === 'assistant') {
@@ -472,10 +527,27 @@ function addMessageBubble(role, text) {
         inner.className = 'message-content';
         inner.innerHTML = renderAssistantHtml(text);
         div.appendChild(inner);
+        addCodeCopyButtons(inner);
     } else {
         div.textContent = text;
     }
-    messagesDiv.appendChild(div);
+    wrap.appendChild(div);
+
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    actions.appendChild(makeCopyBtn(() => text));
+    if (role === 'assistant') {
+        const regenBtn = document.createElement('button');
+        regenBtn.type = 'button';
+        regenBtn.className = 'msg-action-btn';
+        regenBtn.title = 'Сгенерировать заново';
+        regenBtn.innerHTML = ICON_REGEN;
+        regenBtn.addEventListener('click', regenerate);
+        actions.appendChild(regenBtn);
+    }
+    wrap.appendChild(actions);
+
+    messagesDiv.appendChild(wrap);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
     if (role === 'assistant') {
         setLastAssistantText(text);
@@ -551,10 +623,36 @@ async function submitBugReport() {
 }
 
 // ---------- Send ----------
+async function regenerate() {
+    if (!lastUserQuery || !currentChatId) return;
+    showTyping();
+    sendBtn.disabled = true;
+    try {
+        const res = await fetch(API + '/api/ask', {
+            method: 'POST', headers,
+            body: JSON.stringify({ query: lastUserQuery, chat_id: currentChatId }),
+        });
+        hideTyping();
+        if (res.status === 403) {
+            addMessageBubble('assistant', 'Лимит запросов исчерпан. Обновите тариф.');
+            return;
+        }
+        const data = await res.json();
+        addMessageBubble('assistant', data.answer);
+        loadStats();
+    } catch (e) {
+        hideTyping();
+        addMessageBubble('assistant', 'Ошибка соединения с сервером');
+    } finally {
+        sendBtn.disabled = false;
+    }
+}
+
 async function send() {
     const query = queryInput.value.trim();
     if (!query) return;
 
+    lastUserQuery = query;
     queryInput.value = '';
     addMessageBubble('user', query);
     showTyping();

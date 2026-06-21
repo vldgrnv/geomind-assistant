@@ -46,8 +46,8 @@ function renderAssistantHtml(text) {
     }
     if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) {
         return DOMPurify.sanitize(html, {
-            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
-            ALLOWED_ATTR: ['href', 'title', 'colspan', 'rowspan'],
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img'],
+            ALLOWED_ATTR: ['href', 'title', 'colspan', 'rowspan', 'src', 'alt'],
         });
     }
     return escapeHtml(normalized).replace(/\n/g, '<br>');
@@ -490,6 +490,28 @@ function makeCopyBtn(getText, extraClass) {
     return btn;
 }
 
+function openLightbox(src, alt) {
+    const overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = alt || '';
+    img.className = 'lightbox-img';
+    img.addEventListener('click', e => e.stopPropagation());
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+    overlay.addEventListener('click', close);
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+}
+
+function addImageHandlers(container) {
+    container.querySelectorAll('img').forEach(img => {
+        img.addEventListener('click', () => openLightbox(img.src, img.alt));
+    });
+}
+
 function addCodeCopyButtons(container) {
     container.querySelectorAll('pre').forEach(pre => {
         const wrap = document.createElement('div');
@@ -528,6 +550,7 @@ function addMessageBubble(role, text) {
         inner.innerHTML = renderAssistantHtml(text);
         div.appendChild(inner);
         addCodeCopyButtons(inner);
+        addImageHandlers(inner);
     } else {
         div.textContent = text;
     }
@@ -554,7 +577,11 @@ function addMessageBubble(role, text) {
     }
 }
 
+let _typingShownAt = 0;
+const MIN_TYPING_MS = 5000;
+
 function showTyping() {
+    _typingShownAt = Date.now();
     const div = document.createElement('div');
     div.className = 'typing-indicator';
     div.id = 'typing';
@@ -566,6 +593,13 @@ function showTyping() {
 function hideTyping() {
     const t = document.getElementById('typing');
     if (t) t.remove();
+}
+
+async function hideTypingDelayed() {
+    const elapsed = Date.now() - _typingShownAt;
+    const wait = MIN_TYPING_MS - elapsed;
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    hideTyping();
 }
 
 // ---------- Bug reports ----------
@@ -628,11 +662,12 @@ async function regenerate() {
     showTyping();
     sendBtn.disabled = true;
     try {
+        const fetchStart = Date.now();
         const res = await fetch(API + '/api/ask', {
             method: 'POST', headers,
             body: JSON.stringify({ query: lastUserQuery, chat_id: currentChatId }),
         });
-        hideTyping();
+        Date.now() - fetchStart < 300 ? await hideTypingDelayed() : hideTyping();
         if (res.status === 403) {
             addMessageBubble('assistant', 'Лимит запросов исчерпан. Обновите тариф.');
             return;
@@ -659,11 +694,12 @@ async function send() {
     sendBtn.disabled = true;
 
     try {
+        const fetchStart = Date.now();
         const res = await fetch(API + '/api/ask', {
             method: 'POST', headers,
             body: JSON.stringify({ query, chat_id: currentChatId }),
         });
-        hideTyping();
+        Date.now() - fetchStart < 300 ? await hideTypingDelayed() : hideTyping();
 
         if (res.status === 403) {
             addMessageBubble('assistant', 'Лимит запросов исчерпан. Обновите тариф.');

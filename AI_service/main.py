@@ -9,11 +9,13 @@ try:
     from .classifier import classify_with_gpt
     from .prompt import build_answer_prompt
     from .yandex_gpt import ask
+    from .hardcoded_prompts import match_hardcoded
 except ImportError:
     from search_algorithm import get_algorithm_text, search
     from classifier import classify_with_gpt
     from prompt import build_answer_prompt
     from yandex_gpt import ask
+    from hardcoded_prompts import match_hardcoded
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
@@ -31,6 +33,11 @@ _HELLO_REPLY = (
 
 def handle(user_query):
     started_at = time.perf_counter()
+    hardcoded = match_hardcoded(user_query or "")
+    if hardcoded:
+        logger.info("ask_path=hardcoded duration_ms=%.2f", (time.perf_counter() - started_at) * 1000)
+        return hardcoded
+
     if _GREETING_PAT.match(user_query or ""):
         logger.info("ask_path=greeting duration_ms=%.2f", (time.perf_counter() - started_at) * 1000)
         return _HELLO_REPLY
